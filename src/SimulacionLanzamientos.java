@@ -9,7 +9,7 @@ public class SimulacionLanzamientos {
 
     private static JTable simularMonedaTabla() {
         int[] corridas = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
-        String[] columnas = {"Corridas", "Cara", "Cruz"};
+        String[] columnas = {"Corridas", "% Cara", "% Cruz"};
         Object[][] datos = new Object[corridas.length][3];
         for (int i = 0; i < corridas.length; i++) {
             int n = corridas[i];
@@ -20,8 +20,8 @@ public class SimulacionLanzamientos {
                 else cruz++;
             }
             datos[i][0] = n;
-            datos[i][1] = cara;
-            datos[i][2] = cruz;
+            datos[i][1] = String.format("%.2f", (cara * 100.0) / n) + "%";
+            datos[i][2] = String.format("%.2f", (cruz * 100.0) / n) + "%";
         }
         JTable tabla = new JTable(datos, columnas);
         tabla.setEnabled(false);
@@ -30,7 +30,7 @@ public class SimulacionLanzamientos {
 
     private static JTable simularDadoTabla() {
         int[] corridas = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
-        String[] columnas = {"Corridas", "1", "2", "3", "4", "5", "6"};
+        String[] columnas = {"Corridas", "% 1", "% 2", "% 3", "% 4", "% 5", "% 6"};
         Object[][] datos = new Object[corridas.length][7];
         for (int i = 0; i < corridas.length; i++) {
             int n = corridas[i];
@@ -41,7 +41,7 @@ public class SimulacionLanzamientos {
             }
             datos[i][0] = n;
             for (int k = 0; k < 6; k++) {
-                datos[i][k + 1] = resultados[k];
+                datos[i][k + 1] = String.format("%.2f", (resultados[k] * 100.0) / n) + "%";
             }
         }
         JTable tabla = new JTable(datos, columnas);
@@ -54,7 +54,7 @@ public class SimulacionLanzamientos {
         String[] columnas = new String[12];
         columnas[0] = "Corridas";
         for (int i = 2; i <= 12; i++) {
-            columnas[i - 1] = String.valueOf(i);
+            columnas[i - 1] = "% " + i;
         }
         Object[][] datos = new Object[corridas.length][12];
         for (int i = 0; i < corridas.length; i++) {
@@ -68,7 +68,7 @@ public class SimulacionLanzamientos {
             }
             datos[i][0] = n;
             for (int k = 0; k < 11; k++) {
-                datos[i][k + 1] = resultados[k];
+                datos[i][k + 1] = String.format("%.2f", (resultados[k] * 100.0) / n) + "%";
             }
         }
         JTable tabla = new JTable(datos, columnas);
