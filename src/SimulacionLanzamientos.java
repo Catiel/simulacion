@@ -1,27 +1,25 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
+import java.util.function.IntSupplier;
 
 public class SimulacionLanzamientos {
+    private static final Long SEMILLA = null;
+    private static final Random rand = (SEMILLA == null) ? new Random() : new Random(SEMILLA);
+    private static final int[] CORRIDAS = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
     public static void main(String[] args) {
         SwingUtilities.invokeLater(SimulacionLanzamientos::mostrarVentana);
     }
 
     private static JTable simularMonedaTabla() {
-        int[] corridas = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
         String[] columnas = {"Corridas", "% Cara", "% Cruz"};
-        Object[][] datos = new Object[corridas.length][3];
-        for (int i = 0; i < corridas.length; i++) {
-            int n = corridas[i];
-            Random rand = new Random();
-            int cara = 0, cruz = 0;
-            for (int j = 0; j < n; j++) {
-                if (rand.nextBoolean()) cara++;
-                else cruz++;
-            }
-            datos[i][0] = n;
-            datos[i][1] = String.format("%.2f", (cara * 100.0) / n) + "%";
-            datos[i][2] = String.format("%.2f", (cruz * 100.0) / n) + "%";
+        Object[][] datos = new Object[CORRIDAS.length][3];
+        for (int i = 0; i < CORRIDAS.length; i++) {
+            int n = CORRIDAS[i];
+            IntSupplier roll = () -> rand.nextBoolean() ? 0 : 1;
+            int[] resultados = simulateCounts(n, 2, roll);
+            Object[] fila = buildRow(n, resultados);
+            datos[i] = fila;
         }
         JTable tabla = new JTable(datos, columnas);
         tabla.setEnabled(false);
@@ -29,20 +27,14 @@ public class SimulacionLanzamientos {
     }
 
     private static JTable simularDadoTabla() {
-        int[] corridas = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
         String[] columnas = {"Corridas", "% 1", "% 2", "% 3", "% 4", "% 5", "% 6"};
-        Object[][] datos = new Object[corridas.length][7];
-        for (int i = 0; i < corridas.length; i++) {
-            int n = corridas[i];
-            Random rand = new Random();
-            int[] resultados = new int[6];
-            for (int j = 0; j < n; j++) {
-                resultados[rand.nextInt(6)]++;
-            }
-            datos[i][0] = n;
-            for (int k = 0; k < 6; k++) {
-                datos[i][k + 1] = String.format("%.2f", (resultados[k] * 100.0) / n) + "%";
-            }
+        Object[][] datos = new Object[CORRIDAS.length][7];
+        for (int i = 0; i < CORRIDAS.length; i++) {
+            int n = CORRIDAS[i];
+            IntSupplier roll = () -> rand.nextInt(6);
+            int[] resultados = simulateCounts(n, 6, roll);
+            Object[] fila = buildRow(n, resultados);
+            datos[i] = fila;
         }
         JTable tabla = new JTable(datos, columnas);
         tabla.setEnabled(false);
@@ -50,30 +42,44 @@ public class SimulacionLanzamientos {
     }
 
     private static JTable simularDosDadosTabla() {
-        int[] corridas = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
         String[] columnas = new String[12];
         columnas[0] = "Corridas";
         for (int i = 2; i <= 12; i++) {
             columnas[i - 1] = "% " + i;
         }
-        Object[][] datos = new Object[corridas.length][12];
-        for (int i = 0; i < corridas.length; i++) {
-            int n = corridas[i];
-            Random rand = new Random();
-            int[] resultados = new int[11];
-            for (int j = 0; j < n; j++) {
-                int dado1 = rand.nextInt(6) + 1;
-                int dado2 = rand.nextInt(6) + 1;
-                resultados[dado1 + dado2 - 2]++;
-            }
-            datos[i][0] = n;
-            for (int k = 0; k < 11; k++) {
-                datos[i][k + 1] = String.format("%.2f", (resultados[k] * 100.0) / n) + "%";
-            }
+        Object[][] datos = new Object[CORRIDAS.length][12];
+        for (int i = 0; i < CORRIDAS.length; i++) {
+            int n = CORRIDAS[i];
+            IntSupplier roll = () -> (rand.nextInt(6) + 1) + (rand.nextInt(6) + 1) - 2;
+            int[] resultados = simulateCounts(n, 11, roll);
+            Object[] fila = buildRow(n, resultados);
+            datos[i] = fila;
         }
         JTable tabla = new JTable(datos, columnas);
         tabla.setEnabled(false);
         return tabla;
+    }
+
+    private static String formatPercent(int count, int total) {
+        return String.format("%.2f", (count * 100.0) / total) + "%";
+    }
+
+    private static int[] simulateCounts(int n, int categories, IntSupplier roll) {
+        int[] resultados = new int[categories];
+        for (int i = 0; i < n; i++) {
+            int r = roll.getAsInt();
+            if (r >= 0 && r < categories) resultados[r]++;
+        }
+        return resultados;
+    }
+
+    private static Object[] buildRow(int n, int[] counts) {
+        Object[] row = new Object[counts.length + 1];
+        row[0] = n;
+        for (int k = 0; k < counts.length; k++) {
+            row[k + 1] = formatPercent(counts[k], n);
+        }
+        return row;
     }
 
     private static void mostrarVentana() {
